@@ -1,7 +1,7 @@
 plan autope(
   TargetSpec                          $targets            = get_targets('peadm_nodes'),
   Enum['xlarge', 'large', 'standard'] $architecture       = 'standard',
-  String[1]                           $version            = '2019.8.5',
+  String[1]                           $version            = '2019.8.6',
   String[1]                           $console_password   = 'puppetlabs',
   Integer                             $compiler_count     = 1,
   Optional[String[1]]                 $ssh_pub_key_file   = undef,
@@ -133,7 +133,7 @@ plan autope(
   case $architecture {
     'xlarge': {
       $base_params = {
-        'primary_host'            => $inventory['server'][0]['name'],
+        'primary_host'           => $inventory['server'][0]['name'],
         'puppetdb_database_host' => $inventory['psql'][0]['name'],
         'compiler_hosts'         => $inventory['compiler'].map |$c| { $c['name'] },
         'console_password'       => $console_password,
@@ -143,7 +143,7 @@ plan autope(
       }
       if $replica {
         $params = merge($base_params, {
-          'primary_replica_host'            => $inventory['server'][1]['name'],
+          'primary_replica_host'           => $inventory['server'][1]['name'],
           'puppetdb_database_replica_host' => $inventory['psql'][1]['name'],
         })
       } else {
@@ -152,7 +152,7 @@ plan autope(
     }
     'large': {
       $base_params = {
-        'primary_host'           => $inventory['server'][0]['name'],
+        'primary_host'          => $inventory['server'][0]['name'],
         'compiler_hosts'        => $inventory['compiler'].map |$c| { $c['name'] },
         'console_password'      => $console_password,
         'dns_alt_names'         => [ 'puppet', $apply['pool']['value'] ],
@@ -169,7 +169,7 @@ plan autope(
     }
     'standard': {
       $base_params = {
-        'primary_host'           => $inventory['server'][0]['name'],
+        'primary_host'          => $inventory['server'][0]['name'],
         'console_password'      => $console_password,
         'dns_alt_names'         => [ 'puppet', $apply['pool']['value'] ],
         'compiler_pool_address' => $apply['pool']['value'],
@@ -188,7 +188,7 @@ plan autope(
 
   unless $stage {
     # Once all the infrastructure data has been collected, handoff to puppetlabs/peadm
-    run_plan('peadm::provision', $params + $extra_peadm_params)
+    run_plan('peadm::install', $params + $extra_peadm_params)
 
     if $node_count {
       # Annoying work around for AWS not setting the hostname we want. Doing this
