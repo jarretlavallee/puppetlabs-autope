@@ -8,9 +8,6 @@ plan autope(
   Optional[Integer]                   $node_count         = undef,
   Optional[String[1]]                 $instance_image     = undef,
   Optional[String[1]]                 $stack              = undef,
-  Optional[String[1]]                 $network            = undef,
-  Optional[String[1]]                 $subnetwork         = undef,
-  Optional[String[1]]                 $subnetwork_project = undef,
   Optional[Hash]                      $labels             = undef,
   Array                               $firewall_allow     = [],
   Hash                                $extra_peadm_params = {},
@@ -59,42 +56,26 @@ plan autope(
     <% unless $stack == undef { -%>
     stack_name     = "<%= $stack %>"
     <% } -%>
-    <% unless $network == undef { -%>
-    network     = "<%= $network %>"
-    <% } -%>
-    <% unless $subnetwork == undef  { -%>
-    subnetwork  = "<%= $subnetwork %>"
-    <% } -%>
-    <% unless $subnetwork_project == undef { -%>
-    subnetwork_project = "<%= $subnetwork_project %>"
-    <% } -%>
     firewall_allow = <%= String($firewall_allow).regsubst('\'', '"', 'G') %>
     architecture   = "<%= $architecture %>"
     replica        = <%= $replica %>
-    <% unless $labels == undef { -%>
-    labels = {
-      <% $labels.each | String $key, String $value | { -%>
-      "<%= $key %>" = "<%= $value %>"
-      <% } -%>
-    }
-    <% } -%>
-    <% unless $extra_terraform_vars.empty { -%>
-      <% $extra_terraform_vars.each | String $key, $value | { -%>
-        <% if $value =~ String { -%>
+    <%- unless $extra_terraform_vars.empty { -%>
+      <%- $extra_terraform_vars.each | String $key, $value | { -%>
+        <%- if $value =~ String { -%>
     <%= $key %> = "<%= $value %>"
-        <% } elsif $value =~ Integer { -%>
+        <%- } elsif $value =~ Integer { -%>
     <%= $key %> = <%= $value %>
-        <% } elsif $value =~ Array { -%>
+        <%- } elsif $value =~ Array { -%>
     <%= $key %> = <%= String($value).regsubst('\'', '"', 'G')  %>
-        <% } elsif $value =~ Hash { -%>
+        <%- } elsif $value =~ Hash { -%>
     <%= $key %> = {
-      <% $value.each | String $k, String $v | { -%>
+          <%- $value.each | String $k, String $v | { -%>
       "<%= $k %>" = "<%= $v %>"
-          <% } -%>
+          <%- } -%>
     }
-        <% } -%>
-      <% } -%>
-    <% } -%>
+        <%- } -%>
+      <%- } -%>
+    <%- } -%>
     | TFVARS
 
   # TODO: make this print only when user specifies --verbose
@@ -130,7 +111,8 @@ plan autope(
     }
   }
 
-$google_uri = $network =~ NotUndef ? { 
+# If a subnetwork_project is passed in the google hash, do not use the NAT IP
+$google_uri = $extra_terraform_vars.dig('subnetwork_project') =~ NotUndef ? { 
   true    => 'network_interface.0.network_ip',
   default => 'network_interface.0.access_config.0.nat_ip'
 }
