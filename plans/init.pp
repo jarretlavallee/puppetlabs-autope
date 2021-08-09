@@ -8,6 +8,9 @@ plan autope(
   Optional[Integer]                   $node_count         = undef,
   Optional[String[1]]                 $instance_image     = undef,
   Optional[String[1]]                 $stack              = undef,
+  Optional[String[1]]                 $network            = undef,
+  Optional[String[1]]                 $subnetwork         = undef,
+  Optional[String[1]]                 $subnetwork_project = undef,
   Array                               $firewall_allow     = [],
   Hash                                $extra_peadm_params = {},
   Boolean                             $replica            = false,
@@ -54,6 +57,15 @@ plan autope(
     <% unless stack == undef { -%>
     stack_name     = "<%= $stack %>"
     <% } -%>
+    <% unless network == undef { -%>
+    network     = "<%= $network %>"
+    <% } -%>
+    <% unless subnetwork == undef  { -%>
+    subnetwork  = "<%= $subnetwork %>"
+    <% } -%>
+    <% unless subnetwork_project == undef { -%>
+    subnetwork_project = "<%= $subnetwork_project %>"
+    <% } -%>
     firewall_allow = <%= String($firewall_allow).regsubst('\'', '"', 'G') %>
     architecture   = "<%= $architecture %>"
     replica        = <%= $replica %>
@@ -92,6 +104,10 @@ plan autope(
     }
   }
 
+$google_uri = $network =~ NotUndef ? { 
+  true    => 'network_interface.0.network_ip',
+  default => 'network_interface.0.access_config.0.nat_ip'
+}
   # Generate an inventory of freshly provisioned nodes using the parameters that
   # are appropriate based on which cloud provider we've chosen to use. Utilizes
   # different name and uri parameters to allow for the target's SSH address to
@@ -108,7 +124,7 @@ plan autope(
         'target_mapping' => $provider ? {
           'google' => {
             'name' => 'metadata.internalDNS',
-            'uri'  => 'network_interface.0.access_config.0.nat_ip',
+            'uri'  => $google_uri,
           },
           'aws' => {
             'name' => 'private_dns',

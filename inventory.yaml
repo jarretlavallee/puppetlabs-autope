@@ -12,19 +12,19 @@ groups:
         resource_type: google_compute_instance.server
         target_mapping:
           name: metadata.internalDNS
-          uri: network_interface.0.access_config.0.nat_ip
+          uri: network_interface.0.network_ip
       - _plugin: terraform
         dir: .terraform/google_pe_arch
         resource_type: google_compute_instance.compiler
         target_mapping:
           name: metadata.internalDNS
-          uri: network_interface.0.access_config.0.nat_ip
+          uri: network_interface.0.network_ip
       - _plugin: terraform
         dir: .terraform/google_pe_arch
         resource_type: google_compute_instance.psql
         target_mapping:
           name: metadata.internalDNS
-          uri: network_interface.0.access_config.0.nat_ip
+          uri: network_interface.0.network_ip
       - _plugin: terraform
         dir: .terraform/aws_pe_arch
         resource_type: aws_instance.server
@@ -50,7 +50,7 @@ groups:
         resource_type: google_compute_instance.node
         target_mapping:
           name: metadata.internalDNS
-          uri: network_interface.0.access_config.0.nat_ip
+          uri: network_interface.0.network_ip
       - _plugin: terraform
         dir: .terraform/aws_pe_arch
         resource_type: aws_instance.node
