@@ -82,6 +82,16 @@ plan autope(
       <% $extra_terraform_vars.each | String $key, $value | { -%>
         <% if $value =~ String { -%>
     <%= $key %> = "<%= $value %>"
+        <% } elsif $value =~ Integer { -%>
+    <%= $key %> = <%= $value %>
+        <% } elsif $value =~ Array { -%>
+    <%= $key %> = <%= String($value).regsubst('\'', '"', 'G')  %>
+        <% } elsif $value =~ Hash { -%>
+    <%= $key %> = {
+      <% $value.each | String $k, String $v | { -%>
+      "<%= $k %>" = "<%= $v %>"
+          <% } -%>
+    }
         <% } -%>
       <% } -%>
     <% } -%>
