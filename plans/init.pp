@@ -14,6 +14,7 @@ plan autope(
   Optional[Hash]                      $labels             = undef,
   Array                               $firewall_allow     = [],
   Hash                                $extra_peadm_params = {},
+  Hash                                $extra_terraform_vars = {},
   Boolean                             $replica            = false,
   Boolean                             $stage              = false,
   # The final three parameters depend on the value of $provider, to do magic
@@ -58,24 +59,31 @@ plan autope(
     <% unless $stack == undef { -%>
     stack_name     = "<%= $stack %>"
     <% } -%>
-    <% unless network == undef { -%>
+    <% unless $network == undef { -%>
     network     = "<%= $network %>"
     <% } -%>
-    <% unless subnetwork == undef  { -%>
+    <% unless $subnetwork == undef  { -%>
     subnetwork  = "<%= $subnetwork %>"
     <% } -%>
-    <% unless subnetwork_project == undef { -%>
+    <% unless $subnetwork_project == undef { -%>
     subnetwork_project = "<%= $subnetwork_project %>"
     <% } -%>
     firewall_allow = <%= String($firewall_allow).regsubst('\'', '"', 'G') %>
     architecture   = "<%= $architecture %>"
     replica        = <%= $replica %>
-    <% unless labels == undef { -%>
+    <% unless $labels == undef { -%>
     labels = {
-      <% $labels.each | String $key, String $value | {-%>
+      <% $labels.each | String $key, String $value | { -%>
       "<%= $key %>" = "<%= $value %>"
       <% } -%>
     }
+    <% } -%>
+    <% unless $extra_terraform_vars.empty { -%>
+      <% $extra_terraform_vars.each | String $key, $value | { -%>
+        <% if $value =~ String { -%>
+    <%= $key %> = "<%= $value %>"
+        <% } -%>
+      <% } -%>
     <% } -%>
     | TFVARS
 
