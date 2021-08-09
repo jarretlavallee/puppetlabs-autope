@@ -11,6 +11,7 @@ plan autope(
   Optional[String[1]]                 $network            = undef,
   Optional[String[1]]                 $subnetwork         = undef,
   Optional[String[1]]                 $subnetwork_project = undef,
+  Optional[Hash]                      $labels             = undef,
   Array                               $firewall_allow     = [],
   Hash                                $extra_peadm_params = {},
   Boolean                             $replica            = false,
@@ -54,7 +55,7 @@ plan autope(
     <% unless $instance_image == undef { -%>
     instance_image = "<%= $instance_image %>"
     <% } -%>
-    <% unless stack == undef { -%>
+    <% unless $stack == undef { -%>
     stack_name     = "<%= $stack %>"
     <% } -%>
     <% unless network == undef { -%>
@@ -69,6 +70,13 @@ plan autope(
     firewall_allow = <%= String($firewall_allow).regsubst('\'', '"', 'G') %>
     architecture   = "<%= $architecture %>"
     replica        = <%= $replica %>
+    <% unless labels == undef { -%>
+    labels = {
+      <% $labels.each | String $key, String $value | {-%>
+      "<%= $key %>" = "<%= $value %>"
+      <% } -%>
+    }
+    <% } -%>
     | TFVARS
 
   # TODO: make this print only when user specifies --verbose
